@@ -1,0 +1,172 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+    --animate-fade-in: fade-in 0.5s ease-out;
+    --animate-pulse-soft: pulse-soft 1.8s ease-in-out infinite;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse-soft {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Paleta "Apple-blue" heredada de Summarify V1 (src/index.css). */
+:root {
+    --background: hsl(0 0% 100%);
+    --foreground: hsl(222 20% 12%);
+    --card: hsl(0 0% 100%);
+    --card-foreground: hsl(222 20% 12%);
+    --popover: hsl(0 0% 100%);
+    --popover-foreground: hsl(222 20% 12%);
+    --primary: hsl(211 100% 50%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(220 20% 96%);
+    --secondary-foreground: hsl(222 20% 12%);
+    --muted: hsl(220 20% 96%);
+    --muted-foreground: hsl(220 9% 46%);
+    --accent: hsl(220 20% 94%);
+    --accent-foreground: hsl(222 20% 12%);
+    --destructive: hsl(4 86% 58%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --border: hsl(220 16% 90%);
+    --input: hsl(220 16% 90%);
+    --ring: hsl(211 100% 50%);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --radius: 1rem;
+    --sidebar: hsl(0 0% 100%);
+    --sidebar-foreground: hsl(222 20% 12%);
+    --sidebar-primary: hsl(211 100% 50%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(220 20% 94%);
+    --sidebar-accent-foreground: hsl(222 20% 12%);
+    --sidebar-border: hsl(220 16% 90%);
+    --sidebar-ring: hsl(211 100% 50%);
+}
+
+.dark {
+    --background: hsl(222 24% 7%);
+    --foreground: hsl(210 20% 96%);
+    --card: hsl(222 22% 10%);
+    --card-foreground: hsl(210 20% 96%);
+    --popover: hsl(222 22% 10%);
+    --popover-foreground: hsl(210 20% 96%);
+    --primary: hsl(211 100% 58%);
+    --primary-foreground: hsl(0 0% 100%);
+    --secondary: hsl(222 18% 15%);
+    --secondary-foreground: hsl(210 20% 96%);
+    --muted: hsl(222 18% 15%);
+    --muted-foreground: hsl(220 10% 65%);
+    --accent: hsl(222 18% 17%);
+    --accent-foreground: hsl(210 20% 96%);
+    --destructive: hsl(4 76% 55%);
+    --destructive-foreground: hsl(0 0% 100%);
+    --border: hsl(222 16% 18%);
+    --input: hsl(222 16% 18%);
+    --ring: hsl(211 100% 58%);
+    --chart-1: oklch(0.87 0 0);
+    --chart-2: oklch(0.556 0 0);
+    --chart-3: oklch(0.439 0 0);
+    --chart-4: oklch(0.371 0 0);
+    --chart-5: oklch(0.269 0 0);
+    --sidebar: hsl(222 22% 10%);
+    --sidebar-foreground: hsl(210 20% 96%);
+    --sidebar-primary: hsl(211 100% 58%);
+    --sidebar-primary-foreground: hsl(0 0% 100%);
+    --sidebar-accent: hsl(222 18% 17%);
+    --sidebar-accent-foreground: hsl(210 20% 96%);
+    --sidebar-border: hsl(222 16% 18%);
+    --sidebar-ring: hsl(211 100% 58%);
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+    }
+  html {
+    scroll-behavior: smooth;
+    @apply font-sans;
+    }
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    }
+}
+
+/* Scrollbar sutil, estilo Apple (heredado de V1). */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted-foreground) 30%, transparent);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted-foreground) 50%, transparent);
+}
