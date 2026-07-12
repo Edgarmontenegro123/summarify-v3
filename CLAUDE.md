@@ -18,7 +18,15 @@ Requires `.env.local` with `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` (cop
 
 ## Architecture
 
-Summarify V2 is the evolution of [`summarify`](../summarify) (V1, 100% client-side, no backend) into an app with a **real Supabase backend** — Auth (email+password) and Postgres (per-user document history). The summarisation engine itself is unchanged from V1: still a local, deterministic extractive algorithm, not an LLM call. Don't reintroduce an external summarisation API.
+Summarify V3 (this repo) is the international evolution of [`summarify-v2`](https://github.com/Edgarmontenegro123/summarify-v2), which itself evolved [`summarify`](../summarify) (V1, 100% client-side, no backend) into an app with a **real Supabase backend** — Auth (email+password) and Postgres (per-user document history). The summarisation engine is still unchanged from V1 in spirit: a local, deterministic extractive algorithm, not an LLM call. Don't reintroduce an external summarisation/translation API — this was a deliberate decision (2026-07-12) to keep the project on free resources with no per-request cost.
+
+### Internationalisation (V3)
+
+Two independent language concerns, don't conflate them:
+- **UI language** (`src/contexts/LanguageContext.tsx`, `useLanguage()`) — chrome/labels/buttons, toggled by the user via `LanguageToggle` in the header, persisted to `localStorage`. Dictionary lives in `src/lib/i18n.ts` (`translations.es` / `translations.en`, both must satisfy the same `Translations` interface).
+- **Summary content language** — which language the *currently displayed summary text* is actually written in. Tracked separately as `summaryLanguage` state in `SummarizePage`, because it doesn't necessarily match the current UI language (e.g. reloading an old Spanish summary from history while the UI toggle is set to English). TTS (`useSpeech().speak(text, language)`) and the saved `documents.summary_language` column always follow this, never the UI toggle.
+
+Because the summarisation engine is local/extractive (not a translator), selecting English mode does **not** translate non-English source text. `src/lib/summarize.ts` exports `detectLikelyLanguage()`, a stopword-hit-rate heuristic used only to block English-mode generation when the source is clearly Spanish (shows `summarize.notEnglishWarning` instead of producing a nonsense summary). Low-signal/short text falls back to `"unknown"` and is allowed through rather than blocked, to avoid false positives.
 
 ### Routing and auth gating
 
@@ -36,7 +44,9 @@ Strict separation, don't blur this:
 
 ### Database
 
-One table, `public.documents` (see `supabase/migrations/0001_create_documents_table.sql`): `id`, `user_id`, `title`, `original_text`, `brief_summary`, `detailed_summary`, `created_at`. RLS is mandatory on every user-data table in this project — four explicit policies (select/insert/update/delete) gated on `auth.uid() = user_id`, plus a composite index on `(user_id, created_at desc)` for the "last N documents" query pattern. New migrations follow the same shape: `begin`/`commit`, `drop policy if exists` before each `create policy` so the script is safely re-runnable.
+One table, `public.documents` (see `supabase/migrations/0001_create_documents_table.sql`): `id`, `user_id`, `title`, `original_text`, `brief_summary`, `detailed_summary`, `created_at`, plus `summary_language` (`'es' | 'en'`, default `'es'`, added in `0002_add_summary_language.sql`). RLS is mandatory on every user-data table in this project — four explicit policies (select/insert/update/delete) gated on `auth.uid() = user_id`, plus a composite index on `(user_id, created_at desc)` for the "last N documents" query pattern. New migrations follow the same shape: `begin`/`commit`, `drop policy if exists`/`drop constraint if exists` before each `create` so the script is safely re-runnable. Migrations are additive only in this project — never rewrite `0001` in place.
+
+**V3 shares the same Supabase project as V2** (ref `dlxrcctrckdritkpiuvm`, decided 2026-07-12) — same users, same `documents` table extended in place, not a separate project. Any migration added here must be run against that one shared project before it'll work end-to-end (Supabase dashboard → SQL Editor).
 
 The UI only ever generates one summary mode at a time, so `brief_summary`/`detailed_summary` are nullable — a saved document has exactly one of the two populated.
 
@@ -50,7 +60,7 @@ Identical to V1, carried over deliberately — don't drift from these without be
 - **Visual language:** Apple.com-inspired — pill-shaped buttons (`rounded-full`), `rounded-2xl` cards, `--radius: 1rem` base, no heavy shadows/gradients except the hero text gradient.
 - **Color:** HSL CSS variables in `src/index.css` (Tailwind v4 `@theme inline`), primary is iOS-blue. Never hardcode a colour in a component — adjust the CSS variable instead.
 - **Typography:** system font stack, no imported webfonts.
-- **Language:** all UI copy and error messages are Latin American Spanish. Code comments are Spanish too, only when they explain a non-obvious *why*.
+- **Language:** UI copy is bilingual (Spanish/English) via `useLanguage()`/`src/lib/i18n.ts` — see "Internationalisation" above. Never hardcode user-facing strings in components; add a key to both `translations.es` and `translations.en` instead. Code comments stay in Spanish, only when they explain a non-obvious *why*.
 - **Dark mode:** every new component gets checked in both themes.
 
 ## Spec workflow
@@ -60,7 +70,7 @@ Before implementing a non-trivial new feature, use the `spec-creator` skill (ins
 ## Git conventions
 
 - Global `~/.gitignore_global` excludes `package-lock.json` from all of Edgar's personal repos — don't fight this or re-add the lockfile.
-- Repo is public on GitHub (`Edgarmontenegro123/summarify-v2`), connected to Vercel for auto-deploy on push to `main`.
+- Repo is public on GitHub (`Edgarmontenegro123/summarify-v3`). Not yet connected to Vercel for auto-deploy as of 2026-07-12 — V2 stays live at its own URL until V3 reaches feature parity.
 - **Commit message standard (applies to all of Edgar's projects, agreed 2026-07-12):** subject line is `<emoji> <Short imperative message in British English>`, body also in British English explaining *why*, not *what*. Fixed emoji-per-type mapping (gitmoji-style):
   - ✨ new feature · 🐛 bug fix · 📝 documentation · ♻️ refactor (no behaviour change) · ⚡️ performance · ✅ tests · 🔧 configuration/tooling · 🔒️ security fix · 🚀 deploy · 💄 UI/styling · 🗃️ database/migrations · 🔥 remove code/files · ⬆️ upgrade dependencies · 🎉 milestone/project start
   - Example: `🗃️ Add documents table with RLS policies` with a body explaining the access-control rationale.
