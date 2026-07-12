@@ -1,4 +1,5 @@
 import { supabase } from "@/lib/supabase";
+import type { SummaryLanguage } from "@/types";
 
 export interface DocumentRecord {
   id: string;
@@ -7,6 +8,7 @@ export interface DocumentRecord {
   original_text: string;
   brief_summary: string | null;
   detailed_summary: string | null;
+  summary_language: SummaryLanguage;
   created_at: string;
 }
 
@@ -16,6 +18,7 @@ export interface SaveDocumentInput {
   originalText: string;
   briefSummary?: string | null;
   detailedSummary?: string | null;
+  summaryLanguage: SummaryLanguage;
 }
 
 const RECENT_DOCUMENTS_LIMIT = 5;
@@ -41,6 +44,7 @@ export async function saveDocument(input: SaveDocumentInput): Promise<DocumentRe
       original_text: input.originalText,
       brief_summary: input.briefSummary ?? null,
       detailed_summary: input.detailedSummary ?? null,
+      summary_language: input.summaryLanguage,
     })
     .select()
     .single();
