@@ -1,4 +1,4 @@
-import type { SummaryLanguage, SummaryMode } from "@/types";
+import type {SummaryLanguage, SummaryMode} from '@/types'
 
 // Palabras vacías en español: no aportan significado para puntuar oraciones.
 const STOPWORDS_ES = new Set(
@@ -16,7 +16,7 @@ const STOPWORDS_ES = new Set(
    sin cómo dónde cuál cuáles esto eso aquello aquí allí ahí sobre bajo`
     .split(/\s+/)
     .filter(Boolean)
-);
+)
 
 // English stopwords: same purpose as STOPWORDS_ES, used when the user
 // selects the English mode. Kept in its own set instead of merging with
@@ -40,71 +40,75 @@ const STOPWORDS_EN = new Set(
    learn should america world`
     .split(/\s+/)
     .filter(Boolean)
-);
+)
 
 const STOPWORDS_BY_LANGUAGE: Record<SummaryLanguage, Set<string>> = {
   es: STOPWORDS_ES,
   en: STOPWORDS_EN,
-};
+}
 
-const SENTENCE_SPLIT_RE = /(?<=[.!?…])\s+(?=[A-ZÁÉÍÓÚÑ¿¡"«])|(?<=[.!?…])\n+/g;
+const SENTENCE_SPLIT_RE = /(?<=[.!?…])\s+(?=[A-ZÁÉÍÓÚÑ¿¡"«])|(?<=[.!?…])\n+/g
 
 // Viñetas y guiones de lista: los PDFs suelen perder los saltos de línea al
 // extraer el texto, así que un bloque con viñetas queda pegado en una sola
 // "oración" gigante si no se corta aquí primero.
-const BULLET_SPLIT_RE = /\s*[•●▪‣∙◦]\s*/g;
+const BULLET_SPLIT_RE = /\s*[•●▪‣∙◦]\s*/g
 
 function splitSentences(text: string): string[] {
-  const normalized = text.replace(/\s+/g, " ").trim();
-  if (!normalized) return [];
+  const normalized = text.replace(/\s+/g, ' ').trim()
+  if (!normalized) return []
 
-  const segments = normalized.split(BULLET_SPLIT_RE).filter(Boolean);
+  const segments = normalized.split(BULLET_SPLIT_RE).filter(Boolean)
 
-  const sentences: string[] = [];
+  const sentences: string[] = []
   for (const segment of segments) {
     const parts = segment
       .split(SENTENCE_SPLIT_RE)
       .map((s) => s.trim())
-      .filter((s) => s.length > 0);
-    sentences.push(...parts);
+      .filter((s) => s.length > 0)
+    sentences.push(...parts)
   }
 
-  return sentences;
+  return sentences
 }
 
-const URL_TEST_RE = /https?:\/\/\S+|www\.\S+/i;
+const URL_TEST_RE = /https?:\/\/\S+|www\.\S+/i
 
 function stripUrls(sentence: string): string {
-  return sentence.replace(/https?:\/\/\S+|www\.\S+/gi, " ");
+  return sentence.replace(/https?:\/\/\S+|www\.\S+/gi, ' ')
 }
 
 function tokenizeRaw(text: string): string[] {
-  return stripUrls(text).toLowerCase().match(/[a-záéíóúñü]+/g) || [];
+  return (
+    stripUrls(text)
+      .toLowerCase()
+      .match(/[a-záéíóúñü]+/g) || []
+  )
 }
 
 function tokenizeWords(sentence: string, language: SummaryLanguage): string[] {
-  const stopwords = STOPWORDS_BY_LANGUAGE[language];
-  return tokenizeRaw(sentence).filter((w) => w.length > 2 && !stopwords.has(w));
+  const stopwords = STOPWORDS_BY_LANGUAGE[language]
+  return tokenizeRaw(sentence).filter((w) => w.length > 2 && !stopwords.has(w))
 }
 
 function buildWordFrequencies(
   sentences: string[],
   language: SummaryLanguage
 ): Map<string, number> {
-  const freq = new Map<string, number>();
+  const freq = new Map<string, number>()
 
   for (const sentence of sentences) {
     for (const word of tokenizeWords(sentence, language)) {
-      freq.set(word, (freq.get(word) || 0) + 1);
+      freq.set(word, (freq.get(word) || 0) + 1)
     }
   }
 
-  const max = Math.max(1, ...freq.values());
+  const max = Math.max(1, ...freq.values())
   for (const [word, count] of freq) {
-    freq.set(word, count / max);
+    freq.set(word, count / max)
   }
 
-  return freq;
+  return freq
 }
 
 function scoreSentences(
@@ -113,84 +117,90 @@ function scoreSentences(
   language: SummaryLanguage
 ): number[] {
   return sentences.map((sentence, index) => {
-    const words = tokenizeWords(sentence, language);
-    const wordScore = words.reduce((sum, w) => sum + (freq.get(w) || 0), 0);
-    const lengthNormalized = wordScore / Math.sqrt(Math.max(words.length, 1));
+    const words = tokenizeWords(sentence, language)
+    const wordScore = words.reduce((sum, w) => sum + (freq.get(w) || 0), 0)
+    const lengthNormalized = wordScore / Math.sqrt(Math.max(words.length, 1))
 
-    let bonus = 0;
-    if (index === 0) bonus += 0.15;
-    else if (index === 1) bonus += 0.08;
-    if (index === sentences.length - 1) bonus += 0.05;
-    if (/\d/.test(sentence)) bonus += 0.05;
-    if (/[a-záéíóúñ]\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+/.test(sentence)) bonus += 0.03;
+    let bonus = 0
+    if (index === 0) bonus += 0.15
+    else if (index === 1) bonus += 0.08
+    if (index === sentences.length - 1) bonus += 0.05
+    if (/\d/.test(sentence)) bonus += 0.05
+    if (/[a-záéíóúñ]\s[A-ZÁÉÍÓÚÑ][a-záéíóúñ]+/.test(sentence)) bonus += 0.03
 
     // Las oraciones que son mayormente un enlace aportan poco a un resumen
     // hablado: se deprioritizan en vez de excluirse por completo.
-    const penalty = URL_TEST_RE.test(sentence) ? 0.5 : 1;
+    const penalty = URL_TEST_RE.test(sentence) ? 0.5 : 1
 
-    return lengthNormalized * penalty + bonus;
-  });
+    return lengthNormalized * penalty + bonus
+  })
 }
 
-function pickTopSentences(sentences: string[], scores: number[], count: number): string[] {
+function pickTopSentences(
+  sentences: string[],
+  scores: number[],
+  count: number
+): string[] {
   const ranked = sentences
     .map((sentence, index) => ({ sentence, index, score: scores[index] }))
     .sort((a, b) => b.score - a.score)
     .slice(0, count)
-    .sort((a, b) => a.index - b.index);
+    .sort((a, b) => a.index - b.index)
 
-  return ranked.map((r) => r.sentence);
+  return ranked.map((r) => r.sentence)
 }
 
-const MIN_SENTENCES_TO_SUMMARIZE = 3;
+const MIN_SENTENCES_TO_SUMMARIZE = 3
 
 export function generateSummary(
   rawText: string,
   mode: SummaryMode,
-  language: SummaryLanguage = "es"
+  language: SummaryLanguage = 'es'
 ): string {
-  const sentences = splitSentences(rawText);
+  const sentences = splitSentences(rawText)
 
   if (sentences.length < MIN_SENTENCES_TO_SUMMARIZE) {
-    return rawText.trim();
+    return rawText.trim()
   }
 
-  const freq = buildWordFrequencies(sentences, language);
-  const scores = scoreSentences(sentences, freq, language);
+  const freq = buildWordFrequencies(sentences, language)
+  const scores = scoreSentences(sentences, freq, language)
 
-  if (mode === "breve") {
-    const count = Math.min(5, Math.max(2, Math.round(sentences.length * 0.2)));
-    const selected = pickTopSentences(sentences, scores, count);
-    return selected.join(" ");
+  if (mode === 'breve') {
+    const count = Math.min(5, Math.max(2, Math.round(sentences.length * 0.2)))
+    const selected = pickTopSentences(sentences, scores, count)
+    return selected.join(' ')
   }
 
-  const count = Math.min(12, Math.max(4, Math.round(sentences.length * 0.45)));
-  const selected = pickTopSentences(sentences, scores, count);
-  const [lead, ...rest] = selected;
+  const count = Math.min(12, Math.max(4, Math.round(sentences.length * 0.45)))
+  const selected = pickTopSentences(sentences, scores, count)
+  const [lead, ...rest] = selected
 
-  if (rest.length === 0) return lead;
+  if (rest.length === 0) return lead
 
-  return `${lead}\n\n${rest.map((s) => `• ${s}`).join("\n")}`;
+  return `${lead}\n\n${rest.map((s) => `• ${s}`).join('\n')}`
 }
 
-const MIN_STOPWORD_HITS_FOR_DETECTION = 5;
+const MIN_STOPWORD_HITS_FOR_DETECTION = 5
 
 // Heurística local (sin IA/traducción): cuenta cuántas palabras del texto
 // coinciden con las listas de stopwords de cada idioma. Solo se usa para
 // bloquear el modo Inglés cuando el texto es claramente español —no para
 // detectar cualquier idioma del mundo—, así que con poca señal preferimos
 // "unknown" y dejamos pasar el texto en vez de bloquear en falso.
-export function detectLikelyLanguage(text: string): SummaryLanguage | "unknown" {
-  const words = tokenizeRaw(text);
-  if (words.length === 0) return "unknown";
+export function detectLikelyLanguage(
+  text: string
+): SummaryLanguage | 'unknown' {
+  const words = tokenizeRaw(text)
+  if (words.length === 0) return 'unknown'
 
-  let esHits = 0;
-  let enHits = 0;
+  let esHits = 0
+  let enHits = 0
   for (const word of words) {
-    if (STOPWORDS_ES.has(word)) esHits++;
-    if (STOPWORDS_EN.has(word)) enHits++;
+    if (STOPWORDS_ES.has(word)) esHits++
+    if (STOPWORDS_EN.has(word)) enHits++
   }
 
-  if (esHits + enHits < MIN_STOPWORD_HITS_FOR_DETECTION) return "unknown";
-  return esHits > enHits ? "es" : "en";
+  if (esHits + enHits < MIN_STOPWORD_HITS_FOR_DETECTION) return 'unknown'
+  return esHits > enHits ? 'es' : 'en'
 }

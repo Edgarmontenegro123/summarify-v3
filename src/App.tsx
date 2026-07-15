@@ -1,10 +1,10 @@
-import { Routes, Route } from "react-router-dom";
-import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { PublicOnlyRoute } from "@/components/PublicOnlyRoute";
-import { LoginPage } from "@/pages/LoginPage";
-import { RegisterPage } from "@/pages/RegisterPage";
-import { SummarizePage } from "@/pages/SummarizePage";
-import { HistoryPage } from "@/pages/HistoryPage";
+import {Routes, Route} from 'react-router-dom'
+import {ProtectedRoute} from '@/components/ProtectedRoute'
+import {PublicOnlyRoute} from '@/components/PublicOnlyRoute'
+import {LoginPage} from '@/pages/LoginPage'
+import {RegisterPage} from '@/pages/RegisterPage'
+import {SummarizePage} from '@/pages/SummarizePage'
+import {HistoryPage} from '@/pages/HistoryPage'
 
 export default function App() {
   return (
@@ -19,5 +19,5 @@ export default function App() {
         <Route path="/history" element={<HistoryPage />} />
       </Route>
     </Routes>
-  );
+  )
 }

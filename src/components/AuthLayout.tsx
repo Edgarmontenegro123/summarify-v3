@@ -1,16 +1,16 @@
-import { type ReactNode } from "react";
-import { Sparkles } from "lucide-react";
-import { ThemeToggle } from "@/components/ThemeToggle";
-import { useTheme } from "@/hooks/useTheme";
+import {type ReactNode} from 'react'
+import {Sparkles} from 'lucide-react'
+import {ThemeToggle} from '@/components/ThemeToggle'
+import {useTheme} from '@/hooks/useTheme'
 
 interface AuthLayoutProps {
-  title: string;
-  subtitle: string;
-  children: ReactNode;
+  title: string
+  subtitle: string
+  children: ReactNode
 }
 
 export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
-  const { theme, toggleTheme } = useTheme();
+  const { theme, toggleTheme } = useTheme()
 
   return (
     <div className="flex min-h-screen flex-col bg-background">
@@ -40,5 +40,5 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
         </div>
       </main>
     </div>
-  );
+  )
 }

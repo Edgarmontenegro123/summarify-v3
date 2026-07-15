@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useState} from 'react'
 import {
   Volume2,
   Pause,
@@ -9,27 +9,27 @@ import {
   FileWarning,
   Save,
   Loader2,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useLanguage } from "@/contexts/LanguageContext";
-import type { SummaryMode } from "@/types";
+} from 'lucide-react'
+import {Card, CardContent, CardHeader, CardTitle} from '@/components/ui/card'
+import {Button} from '@/components/ui/button'
+import {useLanguage} from '@/contexts/LanguageContext'
+import type {SummaryMode} from '@/types'
 
 interface SummaryPanelProps {
-  summary: string;
-  mode: SummaryMode | null;
-  isLoading: boolean;
-  error: string | null;
-  isSpeechSupported: boolean;
-  isSpeaking: boolean;
-  isPaused: boolean;
-  onSpeak: () => void;
-  onPause: () => void;
-  onResume: () => void;
-  onStop: () => void;
-  onSave?: () => void;
-  isSaving?: boolean;
-  isSaved?: boolean;
+  summary: string
+  mode: SummaryMode | null
+  isLoading: boolean
+  error: string | null
+  isSpeechSupported: boolean
+  isSpeaking: boolean
+  isPaused: boolean
+  onSpeak: () => void
+  onPause: () => void
+  onResume: () => void
+  onStop: () => void
+  onSave?: () => void
+  isSaving?: boolean
+  isSaved?: boolean
 }
 
 export function SummaryPanel({
@@ -48,56 +48,85 @@ export function SummaryPanel({
   isSaving,
   isSaved,
 }: SummaryPanelProps) {
-  const { t } = useLanguage();
-  const [copied, setCopied] = useState(false);
+  const { t } = useLanguage()
+  const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(summary);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1800);
-  };
+    await navigator.clipboard.writeText(summary)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1800)
+  }
 
-  if (!isLoading && !summary && !error) return null;
+  if (!isLoading && !summary && !error) return null
 
   return (
     <Card className="animate-fade-in">
       <CardHeader className="flex-row items-center justify-between space-y-0">
         <CardTitle className="flex items-center gap-2 text-base">
-          {mode === "breve"
-            ? t("summaryPanel.titleBrief")
-            : mode === "detallado"
-              ? t("summaryPanel.titleDetailed")
-              : t("summaryPanel.titleGeneric")}
+          {mode === 'breve'
+            ? t('summaryPanel.titleBrief')
+            : mode === 'detallado'
+              ? t('summaryPanel.titleDetailed')
+              : t('summaryPanel.titleGeneric')}
         </CardTitle>
 
         {summary && !isLoading && (
           <div className="flex items-center gap-1.5">
-            <Button variant="ghost" size="icon" onClick={handleCopy} aria-label={t("summaryPanel.copyAria")}>
-              {copied ? <Check className="h-4 w-4 text-primary" /> : <Copy className="h-4 w-4" />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleCopy}
+              aria-label={t('summaryPanel.copyAria')}
+            >
+              {copied ? (
+                <Check className="h-4 w-4 text-primary" />
+              ) : (
+                <Copy className="h-4 w-4" />
+              )}
             </Button>
 
             {isSpeechSupported && (
               <>
                 {!isSpeaking && (
-                  <Button variant="secondary" size="sm" onClick={onSpeak} className="gap-1.5">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={onSpeak}
+                    className="gap-1.5"
+                  >
                     <Volume2 className="h-4 w-4" />
-                    {t("summaryPanel.readAloud")}
+                    {t('summaryPanel.readAloud')}
                   </Button>
                 )}
                 {isSpeaking && !isPaused && (
-                  <Button variant="secondary" size="sm" onClick={onPause} className="gap-1.5">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={onPause}
+                    className="gap-1.5"
+                  >
                     <Pause className="h-4 w-4" />
-                    {t("summaryPanel.pause")}
+                    {t('summaryPanel.pause')}
                   </Button>
                 )}
                 {isSpeaking && isPaused && (
-                  <Button variant="secondary" size="sm" onClick={onResume} className="gap-1.5">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={onResume}
+                    className="gap-1.5"
+                  >
                     <Play className="h-4 w-4" />
-                    {t("summaryPanel.resume")}
+                    {t('summaryPanel.resume')}
                   </Button>
                 )}
                 {isSpeaking && (
-                  <Button variant="ghost" size="icon" onClick={onStop} aria-label={t("summaryPanel.stopAria")}>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={onStop}
+                    aria-label={t('summaryPanel.stopAria')}
+                  >
                     <Square className="h-4 w-4" />
                   </Button>
                 )}
@@ -132,7 +161,7 @@ export function SummaryPanel({
             {onSave && (
               <div className="mt-5 border-t border-border/60 pt-4">
                 <Button
-                  variant={isSaved ? "ghost" : "secondary"}
+                  variant={isSaved ? 'ghost' : 'secondary'}
                   size="sm"
                   onClick={onSave}
                   disabled={isSaving || isSaved}
@@ -145,7 +174,7 @@ export function SummaryPanel({
                   ) : (
                     <Save className="h-4 w-4" />
                   )}
-                  {isSaved ? t("summaryPanel.saved") : t("summaryPanel.save")}
+                  {isSaved ? t('summaryPanel.saved') : t('summaryPanel.save')}
                 </Button>
               </div>
             )}
@@ -153,5 +182,5 @@ export function SummaryPanel({
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

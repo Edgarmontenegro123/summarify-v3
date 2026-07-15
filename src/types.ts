@@ -1,2 +1,2 @@
-export type SummaryMode = "breve" | "detallado";
-export type SummaryLanguage = "es" | "en";
+export type SummaryMode = 'breve' | 'detallado'
+export type SummaryLanguage = 'es' | 'en'

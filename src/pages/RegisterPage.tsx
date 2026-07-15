@@ -1,53 +1,56 @@
-import { useState, type FormEvent } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { Loader2, UserPlus, FileWarning, MailCheck } from "lucide-react";
-import { AuthLayout } from "@/components/AuthLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
+import {useState, type FormEvent} from 'react'
+import {Link, useNavigate} from 'react-router-dom'
+import {Loader2, UserPlus, FileWarning, MailCheck} from 'lucide-react'
+import {AuthLayout} from '@/components/AuthLayout'
+import {Card, CardContent} from '@/components/ui/card'
+import {Button} from '@/components/ui/button'
+import {Input} from '@/components/ui/input'
+import {Label} from '@/components/ui/label'
+import {useAuth} from '@/contexts/AuthContext'
 
 export function RegisterPage() {
-  const { signUp } = useAuth();
-  const navigate = useNavigate();
+  const { signUp } = useAuth()
+  const navigate = useNavigate()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [confirmationSent, setConfirmationSent] = useState(false);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [confirmationSent, setConfirmationSent] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
+    e.preventDefault()
+    setError(null)
 
     if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
+      setError('La contraseña debe tener al menos 6 caracteres.')
+      return
     }
     if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
-      return;
+      setError('Las contraseñas no coinciden.')
+      return
     }
 
-    setIsSubmitting(true);
-    const { error: signUpError, needsEmailConfirmation } = await signUp(email.trim(), password);
-    setIsSubmitting(false);
+    setIsSubmitting(true)
+    const { error: signUpError, needsEmailConfirmation } = await signUp(
+      email.trim(),
+      password
+    )
+    setIsSubmitting(false)
 
     if (signUpError) {
-      setError(signUpError);
-      return;
+      setError(signUpError)
+      return
     }
 
     if (needsEmailConfirmation) {
-      setConfirmationSent(true);
-      return;
+      setConfirmationSent(true)
+      return
     }
 
-    navigate("/", { replace: true });
-  };
+    navigate('/', { replace: true })
+  }
 
   if (confirmationSent) {
     return (
@@ -68,7 +71,7 @@ export function RegisterPage() {
           </CardContent>
         </Card>
       </AuthLayout>
-    );
+    )
   }
 
   return (
@@ -131,7 +134,12 @@ export function RegisterPage() {
               </div>
             )}
 
-            <Button type="submit" size="lg" className="w-full gap-2" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full gap-2"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -144,11 +152,11 @@ export function RegisterPage() {
       </Card>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        ¿Ya tenés cuenta?{" "}
+        ¿Ya tenés cuenta?{' '}
         <Link to="/login" className="font-medium text-primary hover:underline">
           Iniciá sesión
         </Link>
       </p>
     </AuthLayout>
-  );
+  )
 }

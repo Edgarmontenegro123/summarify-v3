@@ -1,37 +1,37 @@
-import { useMemo } from "react";
-import { useNavigate } from "react-router-dom";
-import { ArrowLeft, FileText, History, Loader2, RotateCcw } from "lucide-react";
-import { Header } from "@/components/Header";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { useTheme } from "@/hooks/useTheme";
-import { useDocuments } from "@/hooks/useDocuments";
-import { useLanguage } from "@/contexts/LanguageContext";
-import type { DocumentRecord } from "@/lib/documents";
+import {useMemo} from 'react'
+import {useNavigate} from 'react-router-dom'
+import {ArrowLeft, FileText, History, Loader2, RotateCcw} from 'lucide-react'
+import {Header} from '@/components/Header'
+import {Card, CardContent} from '@/components/ui/card'
+import {Button} from '@/components/ui/button'
+import {useTheme} from '@/hooks/useTheme'
+import {useDocuments} from '@/hooks/useDocuments'
+import {useLanguage} from '@/contexts/LanguageContext'
+import type {DocumentRecord} from '@/lib/documents'
 
 export function HistoryPage() {
-  const { theme, toggleTheme } = useTheme();
-  const { documents, isLoading, hasError } = useDocuments();
-  const { language, t } = useLanguage();
-  const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme()
+  const { documents, isLoading, hasError } = useDocuments()
+  const { language, t } = useLanguage()
+  const navigate = useNavigate()
 
   // Formatea cada fecha con el locale del idioma de la UI (no del idioma
   // del resumen guardado), consistente con el resto de las etiquetas.
   const dateFormatter = useMemo(
     () =>
-      new Intl.DateTimeFormat(language === "en" ? "en-US" : "es", {
-        day: "numeric",
-        month: "short",
-        year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
+      new Intl.DateTimeFormat(language === 'en' ? 'en-US' : 'es', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
       }),
     [language]
-  );
+  )
 
   const handleReload = (doc: DocumentRecord) => {
-    navigate("/", { state: { document: doc } });
-  };
+    navigate('/', { state: { document: doc } })
+  }
 
   return (
     <div className="min-h-screen bg-background">
@@ -43,17 +43,17 @@ export function HistoryPage() {
             variant="ghost"
             size="sm"
             className="mb-6 gap-1.5 px-2 text-muted-foreground"
-            onClick={() => navigate("/")}
+            onClick={() => navigate('/')}
           >
             <ArrowLeft className="h-4 w-4" />
-            {t("history.back")}
+            {t('history.back')}
           </Button>
 
           <h1 className="text-balance text-3xl font-semibold tracking-tight sm:text-4xl">
-            {t("history.title")}
+            {t('history.title')}
           </h1>
           <p className="mt-2 text-balance text-muted-foreground">
-            {t("history.subtitle")}
+            {t('history.subtitle')}
           </p>
         </section>
 
@@ -66,7 +66,7 @@ export function HistoryPage() {
         {!isLoading && hasError && (
           <Card>
             <CardContent className="p-6 text-sm text-destructive">
-              {t("history.loadError")}
+              {t('history.loadError')}
             </CardContent>
           </Card>
         )}
@@ -75,7 +75,9 @@ export function HistoryPage() {
           <Card className="animate-fade-in">
             <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
               <History className="h-8 w-8 text-muted-foreground" />
-              <p className="text-sm text-muted-foreground">{t("history.empty")}</p>
+              <p className="text-sm text-muted-foreground">
+                {t('history.empty')}
+              </p>
             </CardContent>
           </Card>
         )}
@@ -90,10 +92,14 @@ export function HistoryPage() {
                       <FileText className="h-4 w-4" />
                     </div>
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">{doc.title}</p>
+                      <p className="truncate text-sm font-medium">
+                        {doc.title}
+                      </p>
                       <p className="mt-0.5 text-xs text-muted-foreground">
-                        {dateFormatter.format(new Date(doc.created_at))} ·{" "}
-                        {doc.detailed_summary ? t("history.tagDetailed") : t("history.tagBrief")}
+                        {dateFormatter.format(new Date(doc.created_at))} ·{' '}
+                        {doc.detailed_summary
+                          ? t('history.tagDetailed')
+                          : t('history.tagBrief')}
                       </p>
                     </div>
                   </div>
@@ -105,7 +111,9 @@ export function HistoryPage() {
                     onClick={() => handleReload(doc)}
                   >
                     <RotateCcw className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t("history.reload")}</span>
+                    <span className="hidden sm:inline">
+                      {t('history.reload')}
+                    </span>
                   </Button>
                 </CardContent>
               </Card>
@@ -114,5 +122,5 @@ export function HistoryPage() {
         )}
       </main>
     </div>
-  );
+  )
 }

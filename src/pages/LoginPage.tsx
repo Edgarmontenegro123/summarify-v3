@@ -1,41 +1,42 @@
-import { useState, type FormEvent } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
-import { Loader2, LogIn, FileWarning } from "lucide-react";
-import { AuthLayout } from "@/components/AuthLayout";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAuth } from "@/contexts/AuthContext";
+import {useState, type FormEvent} from 'react'
+import {Link, useLocation, useNavigate} from 'react-router-dom'
+import {Loader2, LogIn, FileWarning} from 'lucide-react'
+import {AuthLayout} from '@/components/AuthLayout'
+import {Card, CardContent} from '@/components/ui/card'
+import {Button} from '@/components/ui/button'
+import {Input} from '@/components/ui/input'
+import {Label} from '@/components/ui/label'
+import {useAuth} from '@/contexts/AuthContext'
 
 export function LoginPage() {
-  const { signIn } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
+  const { signIn } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const redirectTo =
-    (location.state as { from?: { pathname: string } } | null)?.from?.pathname ?? "/";
+    (location.state as { from?: { pathname: string } } | null)?.from
+      ?.pathname ?? '/'
 
   const handleSubmit = async (e: FormEvent) => {
-    e.preventDefault();
-    setError(null);
-    setIsSubmitting(true);
+    e.preventDefault()
+    setError(null)
+    setIsSubmitting(true)
 
-    const { error: signInError } = await signIn(email.trim(), password);
+    const { error: signInError } = await signIn(email.trim(), password)
 
     if (signInError) {
-      setError(signInError);
-      setIsSubmitting(false);
-      return;
+      setError(signInError)
+      setIsSubmitting(false)
+      return
     }
 
-    navigate(redirectTo, { replace: true });
-  };
+    navigate(redirectTo, { replace: true })
+  }
 
   return (
     <AuthLayout
@@ -83,7 +84,12 @@ export function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" size="lg" className="w-full gap-2" disabled={isSubmitting}>
+            <Button
+              type="submit"
+              size="lg"
+              className="w-full gap-2"
+              disabled={isSubmitting}
+            >
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
@@ -96,11 +102,14 @@ export function LoginPage() {
       </Card>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        ¿No tenés cuenta?{" "}
-        <Link to="/register" className="font-medium text-primary hover:underline">
+        ¿No tenés cuenta?{' '}
+        <Link
+          to="/register"
+          className="font-medium text-primary hover:underline"
+        >
           Registrate
         </Link>
       </p>
     </AuthLayout>
-  );
+  )
 }
