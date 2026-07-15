@@ -4,6 +4,7 @@ Sube un PDF o pega texto largo, generá un resumen (breve o detallado) con un
 motor extractivo 100% local, escuchalo en voz alta, y guardalo en tu
 historial personal — con cuenta propia y datos protegidos por usuario.
 
+**🔗 Demo en vivo:** [summarify-app.vercel.app](https://summarify-app.vercel.app)
 **📦 Repositorio:** [github.com/Edgarmontenegro123/summarify](https://github.com/Edgarmontenegro123/summarify)
 
 Diseño minimalista inspirado en apple.com, con un backend real sobre
