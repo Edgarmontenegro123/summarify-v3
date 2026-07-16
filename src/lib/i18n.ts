@@ -110,6 +110,9 @@ interface Translations {
 
   'resetPassword.title': string
   'resetPassword.subtitle': string
+  'resetPassword.invalidLinkTitle': string
+  'resetPassword.invalidLinkSubtitle': string
+  'resetPassword.requestNewLink': string
   'resetPassword.newPassword': string
   'resetPassword.confirmPassword': string
   'resetPassword.passwordTooShort': string
@@ -249,6 +252,10 @@ export const translations: Record<SummaryLanguage, Translations> = {
 
     'resetPassword.title': 'Elegí tu nueva contraseña',
     'resetPassword.subtitle': 'Escribí una nueva contraseña para tu cuenta.',
+    'resetPassword.invalidLinkTitle': 'Enlace inválido o vencido',
+    'resetPassword.invalidLinkSubtitle':
+      'Este enlace de recuperación ya no es válido.',
+    'resetPassword.requestNewLink': 'Pedir un enlace nuevo',
     'resetPassword.newPassword': 'Nueva contraseña',
     'resetPassword.confirmPassword': 'Confirmar contraseña',
     'resetPassword.passwordTooShort':
@@ -386,6 +393,10 @@ export const translations: Record<SummaryLanguage, Translations> = {
 
     'resetPassword.title': 'Choose your new password',
     'resetPassword.subtitle': 'Write a new password for your account.',
+    'resetPassword.invalidLinkTitle': 'Invalid or expired link',
+    'resetPassword.invalidLinkSubtitle':
+      'This recovery link is no longer valid.',
+    'resetPassword.requestNewLink': 'Request a new link',
     'resetPassword.newPassword': 'New password',
     'resetPassword.confirmPassword': 'Confirm password',
     'resetPassword.passwordTooShort': 'Password must be at least 6 characters.',

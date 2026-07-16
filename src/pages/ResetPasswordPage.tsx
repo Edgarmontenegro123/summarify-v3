@@ -1,6 +1,12 @@
 import {useState, type FormEvent} from 'react'
 import {Link} from 'react-router-dom'
-import {Loader2, KeyRound, FileWarning, CheckCircle2} from 'lucide-react'
+import {
+  Loader2,
+  KeyRound,
+  FileWarning,
+  CheckCircle2,
+  ShieldAlert,
+} from 'lucide-react'
 import {AuthLayout} from '@/components/AuthLayout'
 import {Card, CardContent} from '@/components/ui/card'
 import {Button} from '@/components/ui/button'
@@ -10,7 +16,7 @@ import {useAuth} from '@/contexts/AuthContext'
 import {useLanguage} from '@/contexts/LanguageContext'
 
 export function ResetPasswordPage() {
-  const { updatePassword } = useAuth()
+  const { user, loading, updatePassword } = useAuth()
   const { t } = useLanguage()
 
   const [password, setPassword] = useState('')
@@ -42,6 +48,34 @@ export function ResetPasswordPage() {
     }
 
     setUpdated(true)
+  }
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    return (
+      <AuthLayout
+        title={t('resetPassword.invalidLinkTitle')}
+        subtitle={t('resetPassword.invalidLinkSubtitle')}
+      >
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 p-6 text-center sm:p-8">
+            <ShieldAlert className="h-8 w-8 text-destructive" />
+            <Link to="/forgot-password" className="mt-2">
+              <Button variant="secondary">
+                {t('resetPassword.requestNewLink')}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </AuthLayout>
+    )
   }
 
   if (updated) {

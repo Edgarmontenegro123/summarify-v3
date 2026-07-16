@@ -22,10 +22,16 @@ export default function App() {
           <Route path="/forgot-password" element={<ForgotPasswordPage />} />
         </Route>
 
+        {/* Sin guard: Supabase establece una sesion de recuperacion temporal
+            al activar el token del email, y tanto ProtectedRoute (expulsa
+            sin sesion) como PublicOnlyRoute (expulsa con sesion) la sacarian
+            de esta pantalla en algun punto del flujo. ResetPasswordPage
+            valida el estado de la sesion por su cuenta. */}
+        <Route path="/reset-password" element={<ResetPasswordPage />} />
+
         <Route element={<ProtectedRoute />}>
           <Route path="/" element={<SummarizePage />} />
           <Route path="/history" element={<HistoryPage />} />
-          <Route path="/reset-password" element={<ResetPasswordPage />} />
         </Route>
       </Routes>
     </>
