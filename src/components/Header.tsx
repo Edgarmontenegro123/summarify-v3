@@ -1,8 +1,19 @@
+import {useState} from 'react'
 import {History, LogOut, Sparkles} from 'lucide-react'
 import {Link} from 'react-router-dom'
 import {ThemeToggle} from '@/components/ThemeToggle'
 import {LanguageToggle} from '@/components/LanguageToggle'
 import {Button} from '@/components/ui/button'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog'
 import {useAuth} from '@/contexts/AuthContext'
 import {useLanguage} from '@/contexts/LanguageContext'
 
@@ -14,6 +25,7 @@ interface HeaderProps {
 export function Header({ theme, onToggleTheme }: HeaderProps) {
   const { user, signOut } = useAuth()
   const { t } = useLanguage()
+  const [confirmLogoutOpen, setConfirmLogoutOpen] = useState(false)
 
   return (
     <header className="no-print sticky top-0 z-50 border-b border-border/60 bg-background/80 backdrop-blur-xl">
@@ -46,7 +58,7 @@ export function Header({ theme, onToggleTheme }: HeaderProps) {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={signOut}
+                onClick={() => setConfirmLogoutOpen(true)}
                 aria-label={t('header.signOut')}
                 className="rounded-full"
               >
@@ -58,6 +70,23 @@ export function Header({ theme, onToggleTheme }: HeaderProps) {
           <ThemeToggle theme={theme} onToggle={onToggleTheme} />
         </div>
       </div>
+
+      <AlertDialog open={confirmLogoutOpen} onOpenChange={setConfirmLogoutOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t('logout.confirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t('logout.confirmBody')}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>{t('logout.cancel')}</AlertDialogCancel>
+            <AlertDialogAction variant="destructive" onClick={signOut}>
+              {t('logout.confirm')}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </header>
   )
 }

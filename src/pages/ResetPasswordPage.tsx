@@ -1,6 +1,6 @@
 import {useState, type FormEvent} from 'react'
-import {Link, useNavigate} from 'react-router-dom'
-import {Loader2, UserPlus, FileWarning, MailCheck} from 'lucide-react'
+import {Link} from 'react-router-dom'
+import {Loader2, KeyRound, FileWarning, CheckCircle2} from 'lucide-react'
 import {AuthLayout} from '@/components/AuthLayout'
 import {Card, CardContent} from '@/components/ui/card'
 import {Button} from '@/components/ui/button'
@@ -9,65 +9,54 @@ import {Label} from '@/components/ui/label'
 import {useAuth} from '@/contexts/AuthContext'
 import {useLanguage} from '@/contexts/LanguageContext'
 
-export function RegisterPage() {
-  const { signUp } = useAuth()
+export function ResetPasswordPage() {
+  const { updatePassword } = useAuth()
   const { t } = useLanguage()
-  const navigate = useNavigate()
 
-  const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const [confirmationSent, setConfirmationSent] = useState(false)
+  const [updated, setUpdated] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
 
     if (password.length < 6) {
-      setError(t('register.passwordTooShort'))
+      setError(t('resetPassword.passwordTooShort'))
       return
     }
     if (password !== confirmPassword) {
-      setError(t('register.passwordMismatch'))
+      setError(t('resetPassword.passwordMismatch'))
       return
     }
 
     setIsSubmitting(true)
-    const { error: signUpError, needsEmailConfirmation } = await signUp(
-      email.trim(),
-      password
-    )
+    const { error: updateError } = await updatePassword(password)
     setIsSubmitting(false)
 
-    if (signUpError) {
-      setError(signUpError)
+    if (updateError) {
+      setError(updateError)
       return
     }
 
-    if (needsEmailConfirmation) {
-      setConfirmationSent(true)
-      return
-    }
-
-    navigate('/', { replace: true })
+    setUpdated(true)
   }
 
-  if (confirmationSent) {
+  if (updated) {
     return (
       <AuthLayout
-        title={t('register.checkEmailTitle')}
-        subtitle={t('register.checkEmailSubtitle', { email })}
+        title={t('resetPassword.successTitle')}
+        subtitle={t('resetPassword.successSubtitle')}
       >
         <Card>
           <CardContent className="flex flex-col items-center gap-3 p-6 text-center sm:p-8">
-            <MailCheck className="h-8 w-8 text-primary" />
-            <p className="text-sm text-muted-foreground">
-              {t('register.checkEmailBody')}
-            </p>
-            <Link to="/login" className="mt-2">
-              <Button variant="secondary">{t('register.goToLogin')}</Button>
+            <CheckCircle2 className="h-8 w-8 text-primary" />
+            <Link to="/" className="mt-2">
+              <Button variant="secondary">
+                {t('resetPassword.continueButton')}
+              </Button>
             </Link>
           </CardContent>
         </Card>
@@ -76,29 +65,15 @@ export function RegisterPage() {
   }
 
   return (
-    <AuthLayout title={t('register.title')} subtitle={t('register.subtitle')}>
+    <AuthLayout
+      title={t('resetPassword.title')}
+      subtitle={t('resetPassword.subtitle')}
+    >
       <Card>
         <CardContent className="p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">{t('register.email')}</Label>
-              <Input
-                id="email"
-                type="email"
-                autoComplete="email"
-                autoCapitalize="none"
-                autoCorrect="off"
-                spellCheck={false}
-                required
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('register.emailPlaceholder')}
-                className="h-11 rounded-xl px-4"
-              />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="password">{t('register.password')}</Label>
+              <Label htmlFor="password">{t('resetPassword.newPassword')}</Label>
               <Input
                 id="password"
                 type="password"
@@ -106,14 +81,14 @@ export function RegisterPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('register.passwordPlaceholder')}
+                placeholder="••••••••"
                 className="h-11 rounded-xl px-4"
               />
             </div>
 
             <div className="space-y-1.5">
               <Label htmlFor="confirmPassword">
-                {t('register.confirmPassword')}
+                {t('resetPassword.confirmPassword')}
               </Label>
               <Input
                 id="confirmPassword"
@@ -122,7 +97,7 @@ export function RegisterPage() {
                 required
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
-                placeholder={t('register.confirmPasswordPlaceholder')}
+                placeholder="••••••••"
                 className="h-11 rounded-xl px-4"
               />
             </div>
@@ -143,20 +118,13 @@ export function RegisterPage() {
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <UserPlus className="h-4 w-4" />
+                <KeyRound className="h-4 w-4" />
               )}
-              {t('register.submit')}
+              {t('resetPassword.submit')}
             </Button>
           </form>
         </CardContent>
       </Card>
-
-      <p className="mt-6 text-center text-sm text-muted-foreground">
-        {t('register.hasAccount')}{' '}
-        <Link to="/login" className="font-medium text-primary hover:underline">
-          {t('register.loginLink')}
-        </Link>
-      </p>
     </AuthLayout>
   )
 }

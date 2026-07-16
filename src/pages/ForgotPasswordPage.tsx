@@ -1,6 +1,6 @@
 import {useState, type FormEvent} from 'react'
-import {Link, useLocation, useNavigate} from 'react-router-dom'
-import {Loader2, LogIn, FileWarning} from 'lucide-react'
+import {Link} from 'react-router-dom'
+import {Loader2, Send, FileWarning, MailCheck} from 'lucide-react'
 import {AuthLayout} from '@/components/AuthLayout'
 import {Card, CardContent} from '@/components/ui/card'
 import {Button} from '@/components/ui/button'
@@ -9,44 +9,64 @@ import {Label} from '@/components/ui/label'
 import {useAuth} from '@/contexts/AuthContext'
 import {useLanguage} from '@/contexts/LanguageContext'
 
-export function LoginPage() {
-  const { signIn } = useAuth()
+export function ForgotPasswordPage() {
+  const { resetPasswordForEmail } = useAuth()
   const { t } = useLanguage()
-  const navigate = useNavigate()
-  const location = useLocation()
 
   const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
-
-  const redirectTo =
-    (location.state as { from?: { pathname: string } } | null)?.from
-      ?.pathname ?? '/'
+  const [sent, setSent] = useState(false)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
     setIsSubmitting(true)
 
-    const { error: signInError } = await signIn(email.trim(), password)
+    const { error: resetError } = await resetPasswordForEmail(email.trim())
+    setIsSubmitting(false)
 
-    if (signInError) {
-      setError(signInError)
-      setIsSubmitting(false)
+    if (resetError) {
+      setError(resetError)
       return
     }
 
-    navigate(redirectTo, { replace: true })
+    setSent(true)
+  }
+
+  if (sent) {
+    return (
+      <AuthLayout
+        title={t('forgotPassword.successTitle')}
+        subtitle={t('forgotPassword.successSubtitle', { email })}
+      >
+        <Card>
+          <CardContent className="flex flex-col items-center gap-3 p-6 text-center sm:p-8">
+            <MailCheck className="h-8 w-8 text-primary" />
+            <p className="text-sm text-muted-foreground">
+              {t('forgotPassword.successBody')}
+            </p>
+            <Link to="/login" className="mt-2">
+              <Button variant="secondary">
+                {t('forgotPassword.backToLogin')}
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      </AuthLayout>
+    )
   }
 
   return (
-    <AuthLayout title={t('login.title')} subtitle={t('login.subtitle')}>
+    <AuthLayout
+      title={t('forgotPassword.title')}
+      subtitle={t('forgotPassword.subtitle')}
+    >
       <Card>
         <CardContent className="p-6 sm:p-8">
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-1.5">
-              <Label htmlFor="email">{t('login.email')}</Label>
+              <Label htmlFor="email">{t('forgotPassword.email')}</Label>
               <Input
                 id="email"
                 type="email"
@@ -57,31 +77,9 @@ export function LoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('login.emailPlaceholder')}
+                placeholder={t('forgotPassword.emailPlaceholder')}
                 className="h-11 rounded-xl px-4"
               />
-            </div>
-
-            <div className="space-y-1.5">
-              <Label htmlFor="password">{t('login.password')}</Label>
-              <Input
-                id="password"
-                type="password"
-                autoComplete="current-password"
-                required
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder={t('login.passwordPlaceholder')}
-                className="h-11 rounded-xl px-4"
-              />
-              <div className="text-right">
-                <Link
-                  to="/forgot-password"
-                  className="text-sm font-medium text-primary hover:underline"
-                >
-                  {t('login.forgotPassword')}
-                </Link>
-              </div>
             </div>
 
             {error && (
@@ -100,21 +98,17 @@ export function LoginPage() {
               {isSubmitting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
               ) : (
-                <LogIn className="h-4 w-4" />
+                <Send className="h-4 w-4" />
               )}
-              {t('login.submit')}
+              {t('forgotPassword.submit')}
             </Button>
           </form>
         </CardContent>
       </Card>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        {t('login.noAccount')}{' '}
-        <Link
-          to="/register"
-          className="font-medium text-primary hover:underline"
-        >
-          {t('login.registerLink')}
+        <Link to="/login" className="font-medium text-primary hover:underline">
+          {t('forgotPassword.backToLogin')}
         </Link>
       </p>
     </AuthLayout>
