@@ -1,6 +1,7 @@
 import {type ReactNode} from 'react'
 import {Sparkles} from 'lucide-react'
 import {ThemeToggle} from '@/components/ThemeToggle'
+import {LanguageToggle} from '@/components/LanguageToggle'
 import {useTheme} from '@/contexts/ThemeContext'
 
 interface AuthLayoutProps {
@@ -23,7 +24,10 @@ export function AuthLayout({ title, subtitle, children }: AuthLayoutProps) {
             Summarify
           </span>
         </div>
-        <ThemeToggle theme={theme} onToggle={toggleTheme} />
+        <div className="flex items-center gap-2">
+          <LanguageToggle />
+          <ThemeToggle theme={theme} onToggle={toggleTheme} />
+        </div>
       </header>
 
       <main className="flex flex-1 items-center justify-center px-6 pb-16">
