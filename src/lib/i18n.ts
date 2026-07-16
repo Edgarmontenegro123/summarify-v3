@@ -65,6 +65,10 @@ interface Translations {
 
   'offline.banner': string
 
+  'update.available': string
+  'update.later': string
+  'update.reload': string
+
   'login.title': string
   'login.subtitle': string
   'login.email': string
@@ -194,6 +198,10 @@ export const translations: Record<SummaryLanguage, Translations> = {
 
     'offline.banner':
       'Estás sin conexión. Podés seguir resumiendo, leyendo y exportando — se guardará cuando vuelva internet.',
+
+    'update.available': 'Hay una nueva versión de Summarify disponible.',
+    'update.later': 'Después',
+    'update.reload': 'Actualizar ahora',
 
     'login.title': 'Bienvenido de nuevo',
     'login.subtitle': 'Iniciá sesión para ver y generar tus resúmenes.',
@@ -329,6 +337,10 @@ export const translations: Record<SummaryLanguage, Translations> = {
 
     'offline.banner':
       "You're offline. You can keep summarising, reading, and exporting — saving will resume once you're back online.",
+
+    'update.available': 'A new version of Summarify is available.',
+    'update.later': 'Later',
+    'update.reload': 'Update now',
 
     'login.title': 'Welcome back',
     'login.subtitle': 'Sign in to view and generate your summaries.',
