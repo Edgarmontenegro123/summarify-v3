@@ -70,7 +70,7 @@ Before implementing a non-trivial new feature, use the `spec-creator` skill (ins
 ## Git conventions
 
 - Global `~/.gitignore_global` excludes `package-lock.json` from all of Edgar's personal repos — don't fight this or re-add the lockfile.
-- Repo is public on GitHub (`Edgarmontenegro123/summarify-v3`). Not yet connected to Vercel for auto-deploy as of 2026-07-12 — V2 stays live at its own URL until V3 reaches feature parity.
+- Repo is public on GitHub (`Edgarmontenegro123/summarify`). **Vercel deployment: configured and active**, connected via GitHub Integration — every push to `main` automatically triggers a new production deployment (no manual `vercel deploy` needed). Production URL: `summarify-app.vercel.app`.
 - **Commit message standard (applies to all of Edgar's projects, agreed 2026-07-12):** subject line is `<emoji> <Short imperative message in British English>`, body also in British English explaining *why*, not *what*. Fixed emoji-per-type mapping (gitmoji-style):
   - ✨ new feature · 🐛 bug fix · 📝 documentation · ♻️ refactor (no behaviour change) · ⚡️ performance · ✅ tests · 🔧 configuration/tooling · 🔒️ security fix · 🚀 deploy · 💄 UI/styling · 🗃️ database/migrations · 🔥 remove code/files · ⬆️ upgrade dependencies · 🎉 milestone/project start
   - Example: `🗃️ Add documents table with RLS policies` with a body explaining the access-control rationale.
