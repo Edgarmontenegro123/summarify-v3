@@ -1,6 +1,5 @@
 import * as pdfjsLib from 'pdfjs-dist'
 import pdfjsWorker from 'pdfjs-dist/build/pdf.worker.mjs?url'
-import {reportPdfError} from '@/lib/pdfDebugBus'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = pdfjsWorker
 
@@ -73,8 +72,6 @@ async function extractPageText(
 }
 
 export async function extractTextFromPdf(file: File): Promise<string> {
-  console.log(`Iniciando lectura de PDF, tamaño: ${file.size} bytes`)
-
   try {
     const arrayBuffer = await file.arrayBuffer()
 
@@ -123,7 +120,6 @@ export async function extractTextFromPdf(file: File): Promise<string> {
     return combined
   } catch (error) {
     console.error('Error de lectura PDF (Detalle):', error)
-    reportPdfError(error)
     throw error
   }
 }

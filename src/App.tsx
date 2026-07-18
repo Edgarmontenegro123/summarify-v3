@@ -3,7 +3,6 @@ import {ProtectedRoute} from '@/components/ProtectedRoute'
 import {PublicOnlyRoute} from '@/components/PublicOnlyRoute'
 import {OfflineBanner} from '@/components/OfflineBanner'
 import {UpdateBanner} from '@/components/UpdateBanner'
-import {ErrorDebugOverlay} from '@/components/ErrorDebugOverlay'
 import {useSync} from '@/hooks/useSync'
 import {LoginPage} from '@/pages/LoginPage'
 import {RegisterPage} from '@/pages/RegisterPage'
@@ -19,7 +18,6 @@ export default function App() {
     <>
       <OfflineBanner />
       <UpdateBanner />
-      <ErrorDebugOverlay />
       <Routes>
         <Route element={<PublicOnlyRoute />}>
           <Route path="/login" element={<LoginPage />} />
