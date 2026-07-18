@@ -17,6 +17,7 @@ interface Translations {
   'upload.onlyPdfError': string
   'upload.scannedError': string
   'upload.readError': string
+  'upload.incompatibleError': string
   'upload.extracting': string
   'upload.replaceHint': string
   'upload.dragHint': string
@@ -165,6 +166,8 @@ export const translations: Record<SummaryLanguage, Translations> = {
       'No se pudo extraer texto de este PDF (¿quizás es una imagen escaneada?).',
     'upload.readError':
       'Ocurrió un error al leer el PDF. Intenta con otro archivo.',
+    'upload.incompatibleError':
+      'Este PDF no se pudo leer en tu navegador actual. Probá abrirlo en otro dispositivo o navegador, o pegá el texto directamente abajo.',
     'upload.extracting': 'Extrayendo texto del PDF…',
     'upload.replaceHint': 'Haz clic para reemplazar el archivo',
     'upload.dragHint': 'Arrastra tu PDF aquí o haz clic para buscarlo',
@@ -329,6 +332,8 @@ export const translations: Record<SummaryLanguage, Translations> = {
       "Couldn't extract text from this PDF (maybe it's a scanned image?).",
     'upload.readError':
       'Something went wrong reading the PDF. Try another file.',
+    'upload.incompatibleError':
+      "This PDF couldn't be read on your current browser. Try opening it on another device or browser, or paste the text directly below.",
     'upload.extracting': 'Extracting text from the PDF…',
     'upload.replaceHint': 'Click to replace the file',
     'upload.dragHint': 'Drag your PDF here or click to browse',

@@ -30,11 +30,12 @@ export function UploadZone({ text, onTextChange, disabled }: UploadZoneProps) {
       }
 
       setIsParsing(true)
+      // Carga diferida: pdfjs-dist (y su worker de ~2MB) solo se descarga
+      // cuando el usuario efectivamente sube un PDF, no en el bundle
+      // inicial de la app. Se importa antes del try/catch para que
+      // PdfIncompatibleError quede disponible tambien dentro del catch.
+      const {extractTextFromPdf, PdfIncompatibleError} = await import('@/lib/pdf')
       try {
-        // Carga diferida: pdfjs-dist (y su worker de ~2MB) solo se
-        // descarga cuando el usuario efectivamente sube un PDF, no en el
-        // bundle inicial de la app.
-        const {extractTextFromPdf} = await import('@/lib/pdf')
         const extracted = await extractTextFromPdf(file)
         if (!extracted.trim()) {
           setError(t('upload.scannedError'))
@@ -45,7 +46,15 @@ export function UploadZone({ text, onTextChange, disabled }: UploadZoneProps) {
         }
       } catch (err) {
         console.error(err)
-        setError(t('upload.readError'))
+        // PdfIncompatibleError: getTextContent fallo en todas las paginas
+        // pese a los reintentos (ver lib/pdf.ts) — no es lo mismo que un
+        // PDF escaneado ni que un error de lectura generico, se avisa con
+        // un mensaje que no sugiere causas equivocadas.
+        setError(
+          err instanceof PdfIncompatibleError
+            ? t('upload.incompatibleError')
+            : t('upload.readError')
+        )
         setFileName(null)
       } finally {
         setIsParsing(false)
