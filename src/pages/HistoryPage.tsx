@@ -1,4 +1,4 @@
-import {useMemo, useState} from 'react'
+import {useEffect, useMemo, useRef, useState} from 'react'
 import {useNavigate} from 'react-router-dom'
 import {
   ArrowLeft,
@@ -6,12 +6,14 @@ import {
   History,
   Loader2,
   RotateCcw,
+  Search,
   Trash2,
   WifiOff,
 } from 'lucide-react'
 import {Header} from '@/components/Header'
 import {Card, CardContent} from '@/components/ui/card'
 import {Button} from '@/components/ui/button'
+import {Input} from '@/components/ui/input'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -37,17 +39,42 @@ const FILTER_OPTIONS: { value: LanguageFilter; labelKey: 'history.filterAll' | '
   { value: 'en', labelKey: 'history.filterEn' },
 ]
 
+const SEARCH_DEBOUNCE_MS = 300
+
 export function HistoryPage() {
   const { theme, toggleTheme } = useTheme()
-  const { documents, isLoading, hasError, isFromCache, deleteDocument } =
-    useDocuments()
   const { language, t } = useLanguage()
   const navigate = useNavigate()
 
   const [languageFilter, setLanguageFilter] = useState<LanguageFilter>('all')
+  const [searchInput, setSearchInput] = useState('')
+  const [searchTerm, setSearchTerm] = useState('')
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [deleteError, setDeleteError] = useState(false)
+
+  // Debounce del buscador: no dispara un fetch por cada tecla, solo
+  // cuando el usuario deja de tipear un rato.
+  useEffect(() => {
+    const timeout = setTimeout(
+      () => setSearchTerm(searchInput),
+      SEARCH_DEBOUNCE_MS
+    )
+    return () => clearTimeout(timeout)
+  }, [searchInput])
+
+  const {
+    documents,
+    isLoading,
+    isLoadingMore,
+    hasError,
+    isFromCache,
+    hasMore,
+    loadMore,
+    deleteDocument,
+  } = useDocuments({ searchTerm, languageFilter })
+
+  const isFiltering = searchTerm.trim() !== '' || languageFilter !== 'all'
 
   // Formatea cada fecha con el locale del idioma de la UI (no del idioma
   // del resumen guardado), consistente con el resto de las etiquetas.
@@ -63,16 +90,23 @@ export function HistoryPage() {
     [language]
   )
 
-  // Filtro puramente client-side sobre lo que ya esta cargado (ultimos 5) —
-  // summary_language ya existe en el schema (migracion 0002), no hace
-  // falta un campo/migracion nueva para esto.
-  const filteredDocuments = useMemo(
-    () =>
-      languageFilter === 'all'
-        ? documents
-        : documents.filter((doc) => doc.summary_language === languageFilter),
-    [documents, languageFilter]
-  )
+  // Scroll infinito: el sentinel dispara loadMore() al entrar en viewport.
+  // rootMargin adelanta la carga un poco antes de que el usuario llegue al
+  // final real, para que se sienta continuo.
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
+  useEffect(() => {
+    const node = sentinelRef.current
+    if (!node || !hasMore || isLoading) return
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0]?.isIntersecting) loadMore()
+      },
+      { rootMargin: '200px' }
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [hasMore, isLoading, loadMore])
 
   const handleReload = (doc: DocumentRecord) => {
     navigate('/', { state: { document: doc } })
@@ -118,11 +152,23 @@ export function HistoryPage() {
           </p>
         </section>
 
-        {!isLoading && !hasError && documents.length > 0 && (
+        <div className="mb-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="relative w-full sm:max-w-xs">
+            <Search className="pointer-events-none absolute left-2.5 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="search"
+              aria-label={t('history.searchAria')}
+              placeholder={t('history.searchPlaceholder')}
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+
           <div
             role="group"
             aria-label={t('history.filterLabel')}
-            className="mb-6 flex w-fit items-center gap-0.5 rounded-full border border-border bg-muted/50 p-0.5"
+            className="flex w-fit items-center gap-0.5 rounded-full border border-border bg-muted/50 p-0.5"
           >
             {FILTER_OPTIONS.map((option) => (
               <button
@@ -141,7 +187,7 @@ export function HistoryPage() {
               </button>
             ))}
           </div>
-        )}
+        </div>
 
         {deleteError && (
           <Card className="mb-4 animate-fade-in">
@@ -149,6 +195,13 @@ export function HistoryPage() {
               {t('history.deleteError')}
             </CardContent>
           </Card>
+        )}
+
+        {isFromCache && isFiltering && (
+          <div className="mb-4 flex animate-fade-in items-start gap-2 rounded-xl bg-amber-500/15 p-3 text-xs text-amber-600 dark:text-amber-400">
+            <WifiOff className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            <p>{t('history.limitedOfflineResults')}</p>
+          </div>
         )}
 
         {isLoading && (
@@ -170,86 +223,81 @@ export function HistoryPage() {
             <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
               <History className="h-8 w-8 text-muted-foreground" />
               <p className="text-sm text-muted-foreground">
-                {t('history.empty')}
+                {t(isFiltering ? 'history.filterEmpty' : 'history.empty')}
               </p>
             </CardContent>
           </Card>
         )}
 
         {!isLoading && !hasError && documents.length > 0 && (
-          <>
-            {filteredDocuments.length === 0 ? (
-              <Card className="animate-fade-in">
-                <CardContent className="flex flex-col items-center gap-3 p-10 text-center">
-                  <History className="h-8 w-8 text-muted-foreground" />
-                  <p className="text-sm text-muted-foreground">
-                    {t('history.filterEmpty')}
-                  </p>
+          <div className="space-y-4">
+            {documents.map((doc) => (
+              <Card key={doc.id} className="animate-fade-in">
+                <CardContent className="flex items-center justify-between gap-4 p-5">
+                  <div className="flex min-w-0 items-start gap-3">
+                    <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
+                      <FileText className="h-4 w-4" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="truncate text-sm font-medium">
+                          {doc.title}
+                        </p>
+                        {isFromCache && (
+                          <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
+                            <WifiOff className="h-3 w-3" />
+                            {t('history.offlineBadge')}
+                          </span>
+                        )}
+                      </div>
+                      <p className="mt-0.5 text-xs text-muted-foreground">
+                        {dateFormatter.format(new Date(doc.created_at))} ·{' '}
+                        {doc.detailed_summary
+                          ? t('history.tagDetailed')
+                          : t('history.tagBrief')}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      className="gap-1.5"
+                      onClick={() => handleReload(doc)}
+                    >
+                      <RotateCcw className="h-4 w-4" />
+                      <span className="hidden sm:inline">
+                        {t('history.reload')}
+                      </span>
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label={t('history.deleteAria')}
+                      disabled={deletingId === doc.id}
+                      onClick={() => setConfirmDeleteId(doc.id)}
+                      className="text-muted-foreground hover:text-destructive"
+                    >
+                      {deletingId === doc.id ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="h-4 w-4" />
+                      )}
+                    </Button>
+                  </div>
                 </CardContent>
               </Card>
-            ) : (
-              <div className="space-y-4">
-                {filteredDocuments.map((doc) => (
-                  <Card key={doc.id} className="animate-fade-in">
-                    <CardContent className="flex items-center justify-between gap-4 p-5">
-                      <div className="flex min-w-0 items-start gap-3">
-                        <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary">
-                          <FileText className="h-4 w-4" />
-                        </div>
-                        <div className="min-w-0">
-                          <div className="flex items-center gap-2">
-                            <p className="truncate text-sm font-medium">
-                              {doc.title}
-                            </p>
-                            {isFromCache && (
-                              <span className="inline-flex shrink-0 items-center gap-1 rounded-full bg-amber-500/15 px-2 py-0.5 text-[11px] font-medium text-amber-600 dark:text-amber-400">
-                                <WifiOff className="h-3 w-3" />
-                                {t('history.offlineBadge')}
-                              </span>
-                            )}
-                          </div>
-                          <p className="mt-0.5 text-xs text-muted-foreground">
-                            {dateFormatter.format(new Date(doc.created_at))} ·{' '}
-                            {doc.detailed_summary
-                              ? t('history.tagDetailed')
-                              : t('history.tagBrief')}
-                          </p>
-                        </div>
-                      </div>
+            ))}
 
-                      <div className="flex shrink-0 items-center gap-1.5">
-                        <Button
-                          variant="secondary"
-                          size="sm"
-                          className="gap-1.5"
-                          onClick={() => handleReload(doc)}
-                        >
-                          <RotateCcw className="h-4 w-4" />
-                          <span className="hidden sm:inline">
-                            {t('history.reload')}
-                          </span>
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          aria-label={t('history.deleteAria')}
-                          disabled={deletingId === doc.id}
-                          onClick={() => setConfirmDeleteId(doc.id)}
-                          className="text-muted-foreground hover:text-destructive"
-                        >
-                          {deletingId === doc.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash2 className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
+            {hasMore && (
+              <div ref={sentinelRef} className="flex justify-center py-4">
+                {isLoadingMore && (
+                  <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+                )}
               </div>
             )}
-          </>
+          </div>
         )}
       </main>
 

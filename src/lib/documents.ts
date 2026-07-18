@@ -35,20 +35,112 @@ export type SaveDocumentResult =
   | { status: 'saved'; document: DocumentRecord }
   | { status: 'pending'; document: DocumentRecord }
 
-const RECENT_DOCUMENTS_LIMIT = 5
+export const DEFAULT_PAGE_SIZE = 10
 
-export async function fetchRecentDocuments(
+export interface FetchDocumentsPageParams {
   userId: string
+  searchTerm?: string
+  languageFilter?: SummaryLanguage | 'all'
+  // created_at del ultimo documento ya cargado — undefined pide la
+  // primera pagina. Cursor en vez de offset: con offset, borrar o guardar
+  // algo mientras el usuario esta scrolleando desalinea las paginas
+  // siguientes (saltea o repite filas); con cursor no, porque cada pagina
+  // se pide en relacion a un punto fijo en el tiempo.
+  cursor?: string
+  pageSize?: number
+}
+
+const ILIKE_SEARCH_COLUMNS = [
+  'title',
+  'original_text',
+  'brief_summary',
+  'detailed_summary',
+] as const
+
+// Escapa \, % y _ (caracteres especiales de LIKE/ILIKE) para que el texto
+// que el usuario escribio en el buscador se busque literal, no como
+// wildcard (ej. si busca "50%" no debe matchear cualquier cosa despues de
+// "50").
+function escapeIlikeTerm(term: string): string {
+  return term.replace(/[\\%_]/g, (c) => `\\${c}`)
+}
+
+// .or() de postgrest-js arma la URL a partir de un string crudo que
+// nosotros construimos — a diferencia de .eq()/.ilike() (columna, valor
+// por separado), aca el valor va embebido en la misma sintaxis del
+// filtro. Si el patron final tiene una coma o parentesis, PostgREST lo
+// interpretaria como parte de esa sintaxis (separador de condiciones,
+// agrupacion) en vez de como texto literal. La libreria resuelve el mismo
+// problema en sus propios .in()/.not.in() envolviendo el valor entre
+// comillas dobles cuando contiene esos caracteres (ver
+// PostgrestFilterBuilder.ts, PostgrestReservedCharsRegexp) — replicamos
+// ese mismo criterio aca, mas el escape de comillas internas.
+function quoteForOrFilter(value: string): string {
+  if (!/[,()"]/.test(value)) return value
+  return `"${value.replace(/"/g, '\\"')}"`
+}
+
+function buildSearchFilter(term: string): string {
+  const pattern = quoteForOrFilter(`%${escapeIlikeTerm(term)}%`)
+  return ILIKE_SEARCH_COLUMNS.map((col) => `${col}.ilike.${pattern}`).join(',')
+}
+
+export async function fetchDocumentsPage(
+  params: FetchDocumentsPageParams
 ): Promise<DocumentRecord[]> {
-  const { data, error } = await supabase
-    .from('documents')
-    .select('*')
-    .eq('user_id', userId)
+  const pageSize = params.pageSize ?? DEFAULT_PAGE_SIZE
+
+  let query = supabase.from('documents').select('*').eq('user_id', params.userId)
+
+  if (params.languageFilter && params.languageFilter !== 'all') {
+    query = query.eq('summary_language', params.languageFilter)
+  }
+
+  const term = params.searchTerm?.trim()
+  if (term) {
+    query = query.or(buildSearchFilter(term))
+  }
+
+  if (params.cursor) {
+    query = query.lt('created_at', params.cursor)
+  }
+
+  const { data, error } = await query
     .order('created_at', { ascending: false })
-    .limit(RECENT_DOCUMENTS_LIMIT)
+    .limit(pageSize)
 
   if (error) throw error
   return data ?? []
+}
+
+// Fallback offline: mismo criterio de columnas/"contains" case-insensitive
+// que buildSearchFilter, pero en memoria sobre lo que haya en el cache de
+// IndexedDB (necesariamente un subconjunto de lo que existe en Supabase —
+// ver mergeCachedDocuments).
+export function filterDocumentsInMemory(
+  docs: DocumentRecord[],
+  filters: { searchTerm?: string; languageFilter?: SummaryLanguage | 'all' }
+): DocumentRecord[] {
+  const term = filters.searchTerm?.trim().toLowerCase()
+
+  return docs.filter((doc) => {
+    if (
+      filters.languageFilter &&
+      filters.languageFilter !== 'all' &&
+      doc.summary_language !== filters.languageFilter
+    ) {
+      return false
+    }
+
+    if (!term) return true
+
+    return (
+      doc.title.toLowerCase().includes(term) ||
+      doc.original_text.toLowerCase().includes(term) ||
+      (doc.brief_summary?.toLowerCase().includes(term) ?? false) ||
+      (doc.detailed_summary?.toLowerCase().includes(term) ?? false)
+    )
+  })
 }
 
 function buildDocumentRecord(

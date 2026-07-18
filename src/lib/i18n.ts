@@ -75,6 +75,9 @@ interface Translations {
   'history.filterEs': string
   'history.filterEn': string
   'history.filterEmpty': string
+  'history.searchPlaceholder': string
+  'history.searchAria': string
+  'history.limitedOfflineResults': string
 
   'offline.banner': string
 
@@ -206,7 +209,7 @@ export const translations: Record<SummaryLanguage, Translations> = {
 
     'history.back': 'Volver a Summarify',
     'history.title': 'Tu historial',
-    'history.subtitle': 'Tus últimos 5 resúmenes guardados.',
+    'history.subtitle': 'Buscá y explorá todos tus resúmenes guardados.',
     'history.loadError': 'No se pudo cargar tu historial de resúmenes.',
     'history.empty':
       'Todavía no guardaste ningún resumen. Generá uno y tocá "💾 Guardar en mi historial".',
@@ -226,7 +229,12 @@ export const translations: Record<SummaryLanguage, Translations> = {
     'history.filterAll': 'Todos',
     'history.filterEs': 'Español',
     'history.filterEn': 'Inglés',
-    'history.filterEmpty': 'No hay resúmenes guardados en este idioma.',
+    'history.filterEmpty':
+      'No se encontraron resúmenes que coincidan con la búsqueda o el filtro actual.',
+    'history.searchPlaceholder': 'Buscar por título o contenido…',
+    'history.searchAria': 'Buscar en el historial',
+    'history.limitedOfflineResults':
+      'Sin conexión: estos resultados están limitados a lo que quedó guardado localmente, puede haber más en tu historial completo.',
 
     'offline.banner':
       'Estás sin conexión. Podés seguir resumiendo, leyendo y exportando — se guardará cuando vuelva internet.',
@@ -365,7 +373,7 @@ export const translations: Record<SummaryLanguage, Translations> = {
 
     'history.back': 'Back to Summarify',
     'history.title': 'Your history',
-    'history.subtitle': 'Your last 5 saved summaries.',
+    'history.subtitle': 'Search and browse all your saved summaries.',
     'history.loadError': "Couldn't load your summary history.",
     'history.empty':
       'You haven\'t saved any summaries yet. Generate one and tap "💾 Save to my history".',
@@ -385,7 +393,12 @@ export const translations: Record<SummaryLanguage, Translations> = {
     'history.filterAll': 'All',
     'history.filterEs': 'Spanish',
     'history.filterEn': 'English',
-    'history.filterEmpty': 'No saved summaries in this language.',
+    'history.filterEmpty':
+      'No summaries match the current search or filter.',
+    'history.searchPlaceholder': 'Search by title or content…',
+    'history.searchAria': 'Search history',
+    'history.limitedOfflineResults':
+      "You're offline: these results are limited to what's saved locally — there may be more in your full history.",
 
     'offline.banner':
       "You're offline. You can keep summarising, reading, and exporting — saving will resume once you're back online.",

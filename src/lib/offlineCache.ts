@@ -62,17 +62,40 @@ export async function getCachedDocuments(
   }
 }
 
-export async function setCachedDocuments(
+const CACHE_CAP_PER_USER = 50
+
+// A diferencia del viejo setCachedDocuments (reemplazaba TODO lo cacheado
+// del usuario por el resultado de un fetch puntual), esto es aditivo: cada
+// pagina que se pide online (primera pagina de una busqueda/filtro nuevo,
+// o "cargar mas") suma sus documentos al cache acumulado en vez de
+// pisarlo. Si se reemplazara entero en cada fetch, un filtro por idioma
+// borraria del cache los documentos del otro idioma que ya se habian visto
+// antes — exactamente lo que se necesita disponible para el fallback
+// offline.
+//
+// El tope evita que el cache crezca sin limite a medida que el usuario
+// scrollea mucho historial en una sesion larga: se queda con los 50 mas
+// recientes por usuario (por created_at), no con los ultimos 50
+// insertados — asi el fallback offline siempre prioriza lo mas reciente,
+// que es lo mas probable que el usuario quiera reabrir sin conexion.
+export async function mergeCachedDocuments(
   userId: string,
   docs: DocumentRecord[]
 ): Promise<void> {
   try {
     const db = await getDb()
+
     const tx = db.transaction(STORE_NAME, 'readwrite')
-    const existingKeys = await tx.store.index('by-user').getAllKeys(userId)
-    await Promise.all(existingKeys.map((key) => tx.store.delete(key)))
     await Promise.all(docs.map((doc) => tx.store.put(doc)))
     await tx.done
+
+    const all = await getCachedDocuments(userId)
+    const overflow = all.slice(CACHE_CAP_PER_USER)
+    if (overflow.length === 0) return
+
+    const trimTx = db.transaction(STORE_NAME, 'readwrite')
+    await Promise.all(overflow.map((doc) => trimTx.store.delete(doc.id)))
+    await trimTx.done
   } catch (err) {
     console.error(err)
   }
